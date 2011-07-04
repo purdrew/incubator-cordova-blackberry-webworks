@@ -28,21 +28,20 @@
     <property name="js.file-min"     value="${js.path}/${js.basename-min}" />
     <property name="js.license"      location="lib/license.js" />
     
+    <property name="phonegap-js.path"  location="lib/phonegap-js" />
+    <property name="phonegap-js.build" location="${phonegap-js.path}/build" />
+    
     <!-- BUILD JAVASCRIPT -->
     
     <target name="build-javascript">
-        <mkdir dir="${build.dir}/${js.path}" />
+        <exec executable="make" dir="${phonegap-js.path}" failonerror="true">
+            <arg value="blackberry-webworks" />
+        </exec>
         
-        <!-- uncompressed -->
-        <concat destfile="${build.dir}/${js.file}" append="false">
-            <fileset dir="${js.src}">
-                <include name="*.js" />
-            </fileset>
-        </concat>
-
-        <!-- compressed -->
-        <compress-js input-file="${build.dir}/${js.file}"
-                     output-file="${build.dir}/${js.file-min}" />
+        <mkdir dir="${build.dir}/${js.path}" />
+        <copy todir="${build.dir}/${js.path}">
+            <fileset dir="${phonegap-js.build}" />
+        </copy>
     </target>
     
     <!-- BUILD WIDGET EXTENSION -->
