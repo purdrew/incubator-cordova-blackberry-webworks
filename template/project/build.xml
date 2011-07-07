@@ -14,15 +14,12 @@
     <property name="build.dir"    location="build" />
     <property name="widget.dir"   location="${build.dir}/widget" />
     <property name="code.sign"    value="false" />
-
-    <!-- BlackBerry Widget Packager directory is required. -->
-    <fail unless="properties.bbwp.dir" message="Please specify BlackBerry Widget Packager directory using 'bbwp.dir' in your 'project.properties' file." />    
-
+    
     <!-- LOAD DEVICE -->
     
     <target name="load-device" depends="package-app">
         <bbwp code-sign="true" />
-        <exec executable="${properties.bbwp.dir}/bin/JavaLoader.exe" dir="." failonerror="true">
+        <exec executable="${bbwp.dir}/bin/JavaLoader.exe" dir="." failonerror="true">
             <arg value="-u" />
             <arg value="load" />
             <arg file="${build.dir}/StandardInstall/${cod.name}.cod" />
@@ -36,7 +33,7 @@
         <!-- Locate BBWP simulator directory. There may be multiple, so choose the first. -->
         <path id="bbwp.sim.path">
             <first>
-                <fileset dir="${properties.bbwp.dir}/simpack">
+                <fileset dir="${bbwp.dir}/simpack">
                     <include name="**/handhelds.manifest.txt" />
                 </fileset>
             </first>
@@ -101,7 +98,7 @@
         <condition 
             property="mds.dir" 
             value="${properties.mds.dir}" 
-            else="${properties.bbwp.dir}/mds">
+            else="${bbwp.dir}/mds">
                 <available file="${properties.mds.dir}" type="dir" />
         </condition>
         <echo message="MDS directory=${mds.dir}" />
@@ -111,7 +108,7 @@
         </copy>
         <exec executable="${mds.dir}/run.bat" dir="${mds.dir}" spawn="true" />
         <exec executable="${simulator.dir}/${simulator.bin}" dir="${simulator.dir}" spawn="true" />
-        <exec executable="${properties.bbwp.dir}/FledgeHook.exe" dir="${properties.bbwp.dir}" spawn="true" />
+        <exec executable="${bbwp.dir}/FledgeHook.exe" dir="${bbwp.dir}" spawn="true" />
     </target>
     
     <!-- PACKAGE-APP -->
@@ -139,16 +136,10 @@
     <macrodef name="bbwp">
         <attribute name="code-sign" default="false" />
         <sequential>
-
-            <!-- Ensure bbwp executable exists. -->
-            <property name="properties.bbwp.bin" location="${properties.bbwp.dir}/bbwp.exe" />
-            <available file="${properties.bbwp.bin}" property="properties.bbwp.exists" />
-            <fail unless="properties.bbwp.exists" message="Cannot find ${properties.bbwp.bin}. Please edit 'bbwp.dir' in your 'project.properties' file." />
-
             <if>
                 <equals arg1="@{code-sign}" arg2="true" />
                 <then>
-                    <exec executable="${properties.bbwp.bin}">
+                    <exec executable="${bbwp.bin}">
                         <arg file="${build.dir}/${cod.name}.zip" />
                         <arg value="/g" />
                         <arg value="${properties.sigtool.password}" />
@@ -157,7 +148,7 @@
                     </exec>
                 </then>
                 <else>
-                    <exec executable="${properties.bbwp.bin}">
+                    <exec executable="${bbwp.bin}">
                         <arg file="${build.dir}/${cod.name}.zip" />
                         <arg value="/o" />
                         <arg file="${build.dir}" />
@@ -177,7 +168,7 @@
     <!-- CLEAN DEVICE -->
     
     <target name="clean-device" depends="generate-cod-name">
-        <exec executable="${properties.bbwp.dir}/bin/JavaLoader.exe">
+        <exec executable="${bbwp.dir}/bin/JavaLoader.exe">
             <arg value="-usb" />
             <arg value="erase" />
             <arg value="-f" />
@@ -231,15 +222,15 @@ COMMANDS
                         ant clean-simulator
 
 GETTING STARTED
-  1. Edit project.properties
+  1. The WebWorks SDK must be in your PATH or specified in project.properties
 
   2. &lt;ant load-simulator&gt; to run the widget on the simulator
 
   3. Customize your widget by editing www/config.xml
 
-  4. To run the widget on a BlackBerry device, you will need to purchase
-     code signing keys from RIM. Once you have the key, a widget is installed
-     by connecting a BlackBerry via USB and running &lt;ant load-device&gt;.
+  4. To run the widget on a BlackBerry device, you will need to sign up for
+     (free) code signing keys from RIM. Once you have installed the key,
+     connect a BlackBerry via USB and run &lt;ant load-device&gt;.
         </echo>
     </target>
     
@@ -257,5 +248,46 @@ GETTING STARTED
         
         <echo message="Generated name: ${cod.name}.cod" />
     </target>
+    
+    <!-- MACRO: LOAD BBWP SDK PROPERTIES -->
+    
+    <macrodef name="load-property-bbwp">
+        <sequential>
+            <!-- find the SDK using the PATH -->
+            <exec executable="cmd.exe" dir="./lib" failonerror="true" outputproperty="path.bbwp.dir">
+                <arg value="/C" />
+                <arg value="which.bat" />
+                <arg value="bbwp.exe" />
+            </exec>
+            
+            <!-- if SDK is not in the path, then use the path in project.properties -->
+            <condition property="bbwp.dir" value="${path.bbwp.dir}" else="${properties.bbwp.dir}">
+                <available file="${path.bbwp.dir}/bbwp.exe" />
+            </condition>
+            
+            <!-- save the bbwp.exe path -->
+            <property name="bbwp.bin" value="${bbwp.dir}/bbwp.exe" />
+            
+            <!-- check if the SDK path is valid -->
+            <fail>
+                <condition>
+                    <not>
+                        <available file="${bbwp.bin}" />
+                    </not>
+                </condition>
+Missing BlackBerry WebWorks SDK.
+
+Cannot find the BlackBerry WebWorks SDK.
+
+You can fix this by:
+    - Adding the WebWorks SDK to your Environment Variable 'Path'
+    - or
+    - Update 'bbwp.dir' in '${basedir}\project.properties'
+            </fail>
+        </sequential>
+    </macrodef>
+    
+    <!-- Load the BBWP properties immediately -->
+    <load-property-bbwp />
     
 </project>
