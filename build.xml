@@ -14,6 +14,7 @@
     <property name="template.plugin.dir"  location="template/plugin" />
     <property name="build.dir"            location="build" />
     <property name="update.dir"           value="lib/phonegap.${version}" />
+    <property name="test.dir"             location="test" />
     
     <property name="jar.src"      location="framework/ext/src" />
     <property name="jar.path"     value="ext" />
@@ -33,7 +34,7 @@
     
     <!-- BUILD JAVASCRIPT -->
     
-    <target name="build-javascript">
+    <target name="build-javascript" depends="submodules">
         <exec executable="make" dir="${phonegap-js.path}" failonerror="true">
             <arg value="blackberry-webworks" />
         </exec>
@@ -197,10 +198,49 @@ Getting Started:
         <echo message="Updated build.xml" />
     </target>
 
+    <!-- RUN TEST SUITE -->
+    
+    <target name="test" depends="submodules">
+        <!-- create a test project in this directory -->
+        <delete dir="${test.dir}" />
+        <antcall target="create">
+            <param name="project.path" value="${test.dir}"/>
+        </antcall>
+        
+        <!-- generate the test suite www/ -->
+        <touch file="${phonegap-js.path}/lib/phonegap/phonegap.exec.js" />
+        <exec executable="make" dir="${phonegap-js.path}" failonerror="true">
+            <arg value="blackberry-webworks" />
+            <arg value="test" />
+        </exec>
+        
+        <!-- install the test suite to the test app -->
+        <copy todir="${test.dir}/www" overwrite="true">
+            <fileset dir="${phonegap-js.path}/test" />
+        </copy>
+        
+        <replace file="${test.dir}/www/config.xml" token="PhoneGap Sample" value="Mobile Spec"/>
+        
+        <!-- build and run the test suite -->
+        <ant dir="${test.dir}" target="load-simulator"/>
+    </target>
+    
     <!-- CLEAN -->
     
     <target name="clean">
         <delete dir="${build.dir}" />
+    </target>
+    
+    <!-- Submodules Setup -->
+    
+    <target name="submodules">
+        <echo message="Initializing and updating submodules..." />
+        
+        <exec executable="git" dir="." failonerror="true">
+            <arg value="submodule" />
+            <arg value="update" />
+            <arg value="--init" />
+        </exec>
     </target>
     
     <!-- HELP -->
@@ -237,6 +277,9 @@ COMMANDS
   update-plugin ... Update a plugin's ANT script
                       ant update-plugin PATH
                       ant update-plugin -Dplugin.path="C:\dev\my_plugin"
+
+  test ............ Create and run the test suite
+                      ant test
         </echo>
     </target>
 
