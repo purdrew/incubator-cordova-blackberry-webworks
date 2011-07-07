@@ -7,16 +7,20 @@
 
 <widget xmlns="http://www.w3.org/ns/widgets"
         xmlns:rim="http://www.blackberry.com/ns/widgets"
-	version="1.0.0.0">
+        version="1.0.0.0">
 
   <name>PhoneGap Sample</name>
 
   <description>
-      A sample application written with PhoneGap.
+      A sample application using PhoneGap.
   </description>
 
   <license href="http://opensource.org/licenses/alphabetical">
   </license>
+
+  <author href="http://example.com" email="name@example.com">
+      Your Name
+  </author>
 
   <!-- PhoneGap API -->
   <feature id="blackberry.system" required="true" version="1.0.0.0" />
@@ -43,7 +47,7 @@
 
   <rim:loadingScreen backgroundColor="#000000"
                      foregroundImage="resources/loading_foreground.png"
-		     onFirstLaunch="true">
+                     onFirstLaunch="true">
     <rim:transitionEffect type="fadeOut" />
   </rim:loadingScreen>
 
