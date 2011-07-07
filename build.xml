@@ -12,6 +12,7 @@
     
     <property name="template.project.dir" location="template/project" />
     <property name="template.plugin.dir"  location="template/plugin" />
+    <property name="template.test.dir"    location="template/test" />
     <property name="build.dir"            location="build" />
     <property name="update.dir"           value="lib/phonegap.${version}" />
     <property name="test.dir"             location="test" />
@@ -217,6 +218,7 @@ Getting Started:
         <!-- install the test suite to the test app -->
         <copy todir="${test.dir}/www" overwrite="true">
             <fileset dir="${phonegap-js.path}/test" />
+            <fileset dir="${template.test.dir}/www" />
         </copy>
         
         <replace file="${test.dir}/www/config.xml" token="PhoneGap Sample" value="Mobile Spec"/>
